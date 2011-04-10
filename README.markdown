@@ -1,0 +1,3 @@
+A simple Android chronometer view that counts down to a given time.
+
+Nothing to see here yet... 
