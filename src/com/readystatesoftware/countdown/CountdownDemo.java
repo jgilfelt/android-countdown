@@ -28,83 +28,99 @@ import android.widget.Chronometer.OnChronometerTickListener;
 import android.widget.Toast;
 
 public class CountdownDemo extends Activity {
-	
-	CountdownChronometer mChronometer;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+	CountdownChronometer countdown;
 
-        setContentView(R.layout.chronometer);
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        Button button;
+		setContentView(R.layout.chronometer);
 
-        mChronometer = (CountdownChronometer) findViewById(R.id.chronometer);
-        
-        mChronometer.setBase(System.currentTimeMillis() + 30000);
+		Button button;
 
-        // Watch for button clicks.
-        button = (Button) findViewById(R.id.start);
-        button.setOnClickListener(mStartListener);
+		countdown = (CountdownChronometer) findViewById(R.id.chronometer);
 
-        button = (Button) findViewById(R.id.stop);
-        button.setOnClickListener(mStopListener);
+		countdown.setBase(System.currentTimeMillis() + 30000);
 
-        button = (Button) findViewById(R.id.reset);
-        button.setOnClickListener(mResetListener);
+		button = (Button) findViewById(R.id.start);
+		button.setOnClickListener(mStartListener);
 
-        button = (Button) findViewById(R.id.set_format);
-        button.setOnClickListener(mSetFormatListener);
+		button = (Button) findViewById(R.id.stop);
+		button.setOnClickListener(mStopListener);
 
-        button = (Button) findViewById(R.id.clear_format);
-        button.setOnClickListener(mClearFormatListener);
-        
-        button = (Button) findViewById(R.id.set_listener);
-        button.setOnClickListener(mSetOnCompleteListener);
-    }
+		button = (Button) findViewById(R.id.reset);
+		button.setOnClickListener(mResetListener);
 
-    View.OnClickListener mStartListener = new OnClickListener() {
-        public void onClick(View v) {
-            mChronometer.start();
-        }
-    };
+		button = (Button) findViewById(R.id.set_format);
+		button.setOnClickListener(mSetFormatListener);
 
-    View.OnClickListener mStopListener = new OnClickListener() {
-        public void onClick(View v) {
-            mChronometer.stop();
-        }
-    };
+		button = (Button) findViewById(R.id.clear_format);
+		button.setOnClickListener(mClearFormatListener);
 
-    View.OnClickListener mResetListener = new OnClickListener() {
-        public void onClick(View v) {
-            Calendar c = Calendar.getInstance();
-            c.set(2011, Calendar.AUGUST, 26, 9, 0, 0);
-            mChronometer.setBase(c.getTimeInMillis());
-        }
-    };
+		button = (Button) findViewById(R.id.set_listener);
+		button.setOnClickListener(mSetOnCompleteListener);
 
-    View.OnClickListener mSetFormatListener = new OnClickListener() {
-        public void onClick(View v) {
-            mChronometer.setFormat("Formatted time (%s)");
-        }
-    };
+	}
 
-    View.OnClickListener mClearFormatListener = new OnClickListener() {
-        public void onClick(View v) {
-            mChronometer.setFormat(null);
-        }
-    };
-    
-    View.OnClickListener mSetOnCompleteListener = new OnClickListener() {
-        public void onClick(View v) {
-            mChronometer.setOnCompleteListener(new OnChronometerTickListener() {
+	@Override
+	protected void onResume() {
+		countdown.start();
+		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		countdown.stop();
+		super.onPause();
+	}
+
+	View.OnClickListener mStartListener = new OnClickListener() {
+		public void onClick(View v) {
+			countdown.start();
+		}
+	};
+
+	View.OnClickListener mStopListener = new OnClickListener() {
+		public void onClick(View v) {
+			countdown.stop();
+		}
+	};
+
+	View.OnClickListener mResetListener = new OnClickListener() {
+		public void onClick(View v) {
+			Calendar c = Calendar.getInstance();
+			c.set(2011, Calendar.AUGUST, 26, 9, 0, 0);
+			countdown.setBase(c.getTimeInMillis());
+		}
+	};
+
+	View.OnClickListener mSetFormatListener = new OnClickListener() {
+		public void onClick(View v) {
+			countdown
+					.setCustomChronoFormat("%1$02d days, %2$02d hours, %3$02d minutes "
+							+ "and %4$02d seconds remaining");
+			countdown.setFormat("Formatted time (%s)");
+		}
+	};
+
+	View.OnClickListener mClearFormatListener = new OnClickListener() {
+		public void onClick(View v) {
+			countdown.setCustomChronoFormat(null);
+			countdown.setFormat(null);
+		}
+	};
+
+	View.OnClickListener mSetOnCompleteListener = new OnClickListener() {
+		public void onClick(View v) {
+			countdown.setOnCompleteListener(new OnChronometerTickListener() {
 				@Override
 				public void onChronometerTick(Chronometer chronometer) {
 					Toast.makeText(CountdownDemo.this, "We have lift off!",
-		                    Toast.LENGTH_SHORT).show();
+							Toast.LENGTH_SHORT).show();
 				}
 			});
-        }
-    };
-    
+		}
+	};
+
 }
