@@ -16,9 +16,13 @@
 
 package com.readystatesoftware.countdown;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.text.format.Time;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -72,7 +76,14 @@ public class CountdownDemo extends Activity {
     View.OnClickListener mResetListener = new OnClickListener() {
         public void onClick(View v) {
             //mChronometer.setBase(SystemClock.elapsedRealtime());
-            mChronometer.setBase(SystemClock.elapsedRealtime() + BASE_OFFSET);
+            //mChronometer.setBase(SystemClock.elapsedRealtime() + BASE_OFFSET);
+            Time t = new Time();
+            t.set(0, 0, 11, 26, 8, 2011);
+            
+            Calendar c = Calendar.getInstance();
+            c.set(2011, 8, 26, 11, 0, 0);
+            
+            mChronometer.setBase(c.getTimeInMillis());
         }
     };
 

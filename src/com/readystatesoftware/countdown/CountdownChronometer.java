@@ -32,6 +32,12 @@ import android.widget.Chronometer;
 public class CountdownChronometer extends Chronometer {
 	private static final String TAG = "CountdownChronometer";
 
+	private static final String FAST_FORMAT_DHMMSS = "%1$02d:%2$02d:%3$02d:%4$02d";
+	private static final String FAST_FORMAT_HMMSS = "%1$02d:%2$02d:%3$02d";
+	private static final String FAST_FORMAT_MMSS = "%1$02d:%2$02d";
+	private static final char TIME_PADDING = '0';
+	private static final char TIME_SEPARATOR = ':';
+
     private long mBase;
     private boolean mVisible;
     private boolean mStarted;
@@ -45,70 +51,82 @@ public class CountdownChronometer extends Chronometer {
     private OnChronometerTickListener mOnChronometerTickListener;
     private StringBuilder mRecycle = new StringBuilder(8);
 
-    private static final int TICK_WHAT = 2;
+    private static final int TICK_WHAT = 3;
 
     /**
-     * Initialize this Chronometer object.
-     * Sets the base to the current time.
+     * Initialize this CountdownChronometer object.
      */
     public CountdownChronometer(Context context) {
-        this(context, null, 0);
+        this(context, null, 0, 0);
+    }
+    
+    /**
+     * Initialize this CountdownChronometer object.
+     * 
+     * @param base Use the {@link SystemClock#elapsedRealtime} time base.
+     */
+    public CountdownChronometer(Context context, long base) {
+        this(context, null, 0, base);
     }
 
     /**
      * Initialize with standard view layout information.
-     * Sets the base to the current time.
+     * 
+     * @param base Use the {@link SystemClock#elapsedRealtime} time base.
      */
     public CountdownChronometer(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
+        this(context, attrs, 0, 0);
     }
 
     /**
      * Initialize with standard view layout information and style.
-     * Sets the base to the current time.
+     * 
+     * @param base Use the {@link SystemClock#elapsedRealtime} time base.
      */
-    public CountdownChronometer(Context context, AttributeSet attrs, int defStyle) {
+    public CountdownChronometer(Context context, AttributeSet attrs, int defStyle, long base) {
         super(context, attrs, defStyle);
-
-        init();
+        init(base);
     }
 
-    private void init() {
-        mBase = SystemClock.elapsedRealtime();
-        updateText(mBase);
+    private void init(long base) {
+    	mBase = base;
+        //updateText(mBase);
+    	updateText(System.currentTimeMillis());
     }
 
     /**
-     * Set the time that the count-up timer is in reference to.
+     * Set the time that the count-down timer is in reference to.
      *
      * @param base Use the {@link SystemClock#elapsedRealtime} time base.
      */
-//    @android.view.RemotableViewMethod
+    @Override
     public void setBase(long base) {
         mBase = base;
         dispatchChronometerTick();
-        updateText(SystemClock.elapsedRealtime());
+        //updateText(SystemClock.elapsedRealtime());
+        updateText(System.currentTimeMillis());
     }
 
     /**
-     * Return the base time as set through {@link #setBase}.
+     * Return the base time.
      */
+    @Override
     public long getBase() {
         return mBase;
     }
 
     /**
-     * Sets the format string used for display.  The Chronometer will display
+     * Sets the format string used for display.  The CountdownChronometer will display
      * this string, with the first "%s" replaced by the current timer value in
-     * "MM:SS" or "H:MM:SS" form.
+     * "MM:SS", "H:MM:SS" or "D:HH:MM:SS" form.
      *
      * If the format string is null, or if you never call setFormat(), the
-     * Chronometer will simply display the timer value in "MM:SS" or "H:MM:SS"
+     * Chronometer will simply display the timer value in "MM:SS", "H:MM:SS" or "D:HH:MM:SS"
      * form.
      *
      * @param format the format string.
      */
-//    @android.view.RemotableViewMethod
+    @Override
     public void setFormat(String format) {
         mFormat = format;
         if (format != null && mFormatBuilder == null) {
@@ -119,6 +137,7 @@ public class CountdownChronometer extends Chronometer {
     /**
      * Returns the current format string as set through {@link #setFormat}.
      */
+    @Override
     public String getFormat() {
         return mFormat;
     }
@@ -128,6 +147,7 @@ public class CountdownChronometer extends Chronometer {
      *
      * @param listener The listener.
      */
+    @Override
     public void setOnChronometerTickListener(OnChronometerTickListener listener) {
         mOnChronometerTickListener = listener;
     }
@@ -136,30 +156,33 @@ public class CountdownChronometer extends Chronometer {
      * @return The listener (may be null) that is listening for chronometer change
      *         events.
      */
+    @Override
     public OnChronometerTickListener getOnChronometerTickListener() {
         return mOnChronometerTickListener;
     }
 
     /**
-     * Start counting up.  This does not affect the base as set from {@link #setBase}, just
+     * Start counting down.  This does not affect the base as set from {@link #setBase}, just
      * the view display.
      *
-     * Chronometer works by regularly scheduling messages to the handler, even when the
+     * CountdownChronometer works by regularly scheduling messages to the handler, even when the
      * Widget is not visible.  To make sure resource leaks do not occur, the user should
      * make sure that each start() call has a reciprocal call to {@link #stop}.
      */
+    @Override
     public void start() {
         mStarted = true;
         updateRunning();
     }
 
     /**
-     * Stop counting up.  This does not affect the base as set from {@link #setBase}, just
+     * Stop counting down.  This does not affect the base as set from {@link #setBase}, just
      * the view display.
      *
      * This stops the messages to the handler, effectively releasing resources that would
      * be held as the chronometer is running, via {@link #start}.
      */
+    @Override
     public void stop() {
         mStarted = false;
         updateRunning();
@@ -167,9 +190,7 @@ public class CountdownChronometer extends Chronometer {
 
     /**
      * The same as calling {@link #start} or {@link #stop}.
-     * @hide pending API council approval
      */
-//    @android.view.RemotableViewMethod
     public void setStarted(boolean started) {
         mStarted = started;
         updateRunning();
@@ -190,7 +211,6 @@ public class CountdownChronometer extends Chronometer {
     }
 
     private synchronized void updateText(long now) {
-        //long seconds = now - mBase;
     	long seconds = mBase - now;
         seconds /= 1000;
         String text = formatElapsedTime(mRecycle, seconds);
@@ -220,7 +240,8 @@ public class CountdownChronometer extends Chronometer {
         boolean running = mVisible && mStarted;
         if (running != mRunning) {
             if (running) {
-                updateText(SystemClock.elapsedRealtime());
+                //updateText(SystemClock.elapsedRealtime());
+                updateText(System.currentTimeMillis());
                 dispatchChronometerTick();
                 mHandler.sendMessageDelayed(Message.obtain(mHandler, TICK_WHAT), 1000);
             } else {
@@ -233,7 +254,8 @@ public class CountdownChronometer extends Chronometer {
     private Handler mHandler = new Handler() {
         public void handleMessage(Message m) {
             if (mRunning) {
-                updateText(SystemClock.elapsedRealtime());
+                //updateText(SystemClock.elapsedRealtime());
+            	updateText(System.currentTimeMillis());
                 dispatchChronometerTick();
                 sendMessageDelayed(Message.obtain(this, TICK_WHAT), 1000);
             }
@@ -249,26 +271,24 @@ public class CountdownChronometer extends Chronometer {
     
     ////////
     
-    private static final String FAST_FORMAT_HMMSS = "%1$d:%2$02d:%3$02d";
-    private static final String FAST_FORMAT_MMSS = "%1$02d:%2$02d";
-    private static final char TIME_PADDING = '0';
-    private static final char TIME_SEPARATOR = ':';
-    
-    
+   
     /**
-     * Formats an elapsed time in the form "MM:SS" or "H:MM:SS"
-     * for display on the call-in-progress screen.
+     * Formats an elapsed time in the form "MM:SS", "H:MM:SS" or "D:HH:MM:SS".
      *
      * @param recycle {@link StringBuilder} to recycle, if possible
      * @param elapsedSeconds the elapsed time in seconds.
      */
     private static String formatElapsedTime(StringBuilder recycle, long elapsedSeconds) {
-        //initFormatStrings();
-
+        
+    	long days = 0;
         long hours = 0;
         long minutes = 0;
         long seconds = 0;
 
+        if (elapsedSeconds >= 86400) {
+            days = elapsedSeconds / 86400;
+            elapsedSeconds -= days * 86400;
+        }
         if (elapsedSeconds >= 3600) {
             hours = elapsedSeconds / 3600;
             elapsedSeconds -= hours * 3600;
@@ -279,10 +299,49 @@ public class CountdownChronometer extends Chronometer {
         }
         seconds = elapsedSeconds;
 
-        if (hours > 0) {
+        if (days > 0) {
+        	return formatElapsedTime(recycle, FAST_FORMAT_DHMMSS, days, hours, minutes, seconds);
+        } else if (hours > 0) {
             return formatElapsedTime(recycle, FAST_FORMAT_HMMSS, hours, minutes, seconds);
         } else {
             return formatElapsedTime(recycle, FAST_FORMAT_MMSS, minutes, seconds);
+        }
+    }
+    
+    private static String formatElapsedTime(StringBuilder recycle, String format, long days, long hours,
+            long minutes, long seconds) {
+        if (FAST_FORMAT_DHMMSS.equals(format)) {
+            StringBuilder sb = recycle;
+            if (sb == null) {
+                sb = new StringBuilder(8);
+            } else {
+                sb.setLength(0);
+            }
+            sb.append(days);
+            sb.append(TIME_SEPARATOR);
+            if (hours < 10) {
+                sb.append(TIME_PADDING);
+            } else {
+                sb.append(toDigitChar(hours / 10));
+            }
+            sb.append(toDigitChar(hours / 10));
+            sb.append(TIME_SEPARATOR);
+            if (minutes < 10) {
+                sb.append(TIME_PADDING);
+            } else {
+                sb.append(toDigitChar(minutes / 10));
+            }
+            sb.append(toDigitChar(minutes % 10));
+            sb.append(TIME_SEPARATOR);
+            if (seconds < 10) {
+                sb.append(TIME_PADDING);
+            } else {
+                sb.append(toDigitChar(seconds / 10));
+            }
+            sb.append(toDigitChar(seconds % 10));
+            return sb.toString();
+        } else {
+            return String.format(format, hours, minutes, seconds);
         }
     }
     
@@ -316,9 +375,6 @@ public class CountdownChronometer extends Chronometer {
         }
     }
 
-    /**
-     * Fast formatting of m:ss
-     */
     private static String formatElapsedTime(StringBuilder recycle, String format, long minutes,
             long seconds) {
         if (FAST_FORMAT_MMSS.equals(format)) {
