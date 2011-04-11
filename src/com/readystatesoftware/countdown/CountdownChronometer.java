@@ -49,6 +49,7 @@ public class CountdownChronometer extends Chronometer {
     private Object[] mFormatterArgs = new Object[1];
     private StringBuilder mFormatBuilder;
     private OnChronometerTickListener mOnChronometerTickListener;
+    private OnChronometerTickListener mOnCountdownCompleteListener;
     private StringBuilder mRecycle = new StringBuilder(8);
 
     private static final int TICK_WHAT = 3;
@@ -160,6 +161,23 @@ public class CountdownChronometer extends Chronometer {
     public OnChronometerTickListener getOnChronometerTickListener() {
         return mOnChronometerTickListener;
     }
+    
+    /**
+     * Sets the listener to be called when the countdown is complete.
+     *
+     * @param listener The listener.
+     */
+    public void setOnCompleteListener(OnChronometerTickListener listener) {
+    	mOnCountdownCompleteListener = listener;
+    }
+
+    /**
+     * @return The listener (may be null) that is listening for countdown complete
+     *         event.
+     */
+    public OnChronometerTickListener getOnCompleteListener() {
+        return mOnCountdownCompleteListener;
+    }
 
     /**
      * Start counting down.  This does not affect the base as set from {@link #setBase}, just
@@ -247,12 +265,8 @@ public class CountdownChronometer extends Chronometer {
         if (running != mRunning) {
             if (running) {
                 //updateText(SystemClock.elapsedRealtime());
-                if (updateText(System.currentTimeMillis())) {
-                	dispatchChronometerTick();
-                } else {
-                	stop();
-                	running = false;
-                }
+                updateText(System.currentTimeMillis());
+                dispatchChronometerTick();
                 mHandler.sendMessageDelayed(Message.obtain(mHandler, TICK_WHAT), 1000);
             } else {
                 mHandler.removeMessages(TICK_WHAT);
@@ -265,9 +279,14 @@ public class CountdownChronometer extends Chronometer {
         public void handleMessage(Message m) {
             if (mRunning) {
                 //updateText(SystemClock.elapsedRealtime());
-            	updateText(System.currentTimeMillis());
-                dispatchChronometerTick();
-                sendMessageDelayed(Message.obtain(this, TICK_WHAT), 1000);
+            	if (updateText(System.currentTimeMillis())) {
+            		dispatchChronometerTick();
+                    sendMessageDelayed(Message.obtain(this, TICK_WHAT), 1000);
+            	} else {
+            		dispatchCountdownCompleteEvent();
+            		stop();
+            	}
+                
             }
         }
     };
@@ -275,6 +294,12 @@ public class CountdownChronometer extends Chronometer {
     void dispatchChronometerTick() {
         if (mOnChronometerTickListener != null) {
             mOnChronometerTickListener.onChronometerTick(this);
+        }
+    }
+    
+    void dispatchCountdownCompleteEvent() {
+        if (mOnCountdownCompleteListener != null) {
+        	mOnCountdownCompleteListener.onChronometerTick(this);
         }
     }
 	

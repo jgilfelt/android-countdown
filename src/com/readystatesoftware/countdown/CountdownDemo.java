@@ -23,10 +23,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.Chronometer.OnChronometerTickListener;
+import android.widget.Toast;
 
 public class CountdownDemo extends Activity {
 	
-	private static final long BASE_OFFSET = 30000;
 	CountdownChronometer mChronometer;
 
     @Override
@@ -39,7 +41,7 @@ public class CountdownDemo extends Activity {
 
         mChronometer = (CountdownChronometer) findViewById(R.id.chronometer);
         
-        mChronometer.setBase(System.currentTimeMillis() + BASE_OFFSET);
+        mChronometer.setBase(System.currentTimeMillis() + 30000);
 
         // Watch for button clicks.
         button = (Button) findViewById(R.id.start);
@@ -56,6 +58,9 @@ public class CountdownDemo extends Activity {
 
         button = (Button) findViewById(R.id.clear_format);
         button.setOnClickListener(mClearFormatListener);
+        
+        button = (Button) findViewById(R.id.set_listener);
+        button.setOnClickListener(mSetOnCompleteListener);
     }
 
     View.OnClickListener mStartListener = new OnClickListener() {
@@ -89,4 +94,17 @@ public class CountdownDemo extends Activity {
             mChronometer.setFormat(null);
         }
     };
+    
+    View.OnClickListener mSetOnCompleteListener = new OnClickListener() {
+        public void onClick(View v) {
+            mChronometer.setOnCompleteListener(new OnChronometerTickListener() {
+				@Override
+				public void onChronometerTick(Chronometer chronometer) {
+					Toast.makeText(CountdownDemo.this, "We have lift off!",
+		                    Toast.LENGTH_SHORT).show();
+				}
+			});
+        }
+    };
+    
 }

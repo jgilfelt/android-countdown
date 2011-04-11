@@ -58,6 +58,12 @@
         android:layout_height="wrap_content" 
         android:text="@string/chronometer_clear_format">
     </Button>
+    
+    <Button android:id="@+id/set_listener"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+        android:text="@string/chronometer_set_listener">
+    </Button>
 
 </LinearLayout>
 
