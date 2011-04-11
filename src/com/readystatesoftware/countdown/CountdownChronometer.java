@@ -210,9 +210,14 @@ public class CountdownChronometer extends Chronometer {
         updateRunning();
     }
 
-    private synchronized void updateText(long now) {
+    private synchronized boolean updateText(long now) {
     	long seconds = mBase - now;
         seconds /= 1000;
+        boolean stillRunning = true;
+        if (seconds <= 0) {
+        	stillRunning = false;
+        	seconds = 0;
+        }
         String text = formatElapsedTime(mRecycle, seconds);
 
         if (mFormat != null) {
@@ -234,6 +239,7 @@ public class CountdownChronometer extends Chronometer {
             }
         }
         setText(text);
+        return stillRunning;
     }
 
     private void updateRunning() {
@@ -241,8 +247,12 @@ public class CountdownChronometer extends Chronometer {
         if (running != mRunning) {
             if (running) {
                 //updateText(SystemClock.elapsedRealtime());
-                updateText(System.currentTimeMillis());
-                dispatchChronometerTick();
+                if (updateText(System.currentTimeMillis())) {
+                	dispatchChronometerTick();
+                } else {
+                	stop();
+                	running = false;
+                }
                 mHandler.sendMessageDelayed(Message.obtain(mHandler, TICK_WHAT), 1000);
             } else {
                 mHandler.removeMessages(TICK_WHAT);

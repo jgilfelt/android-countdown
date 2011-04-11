@@ -17,19 +17,16 @@
 package com.readystatesoftware.countdown;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.SystemClock;
-import android.text.format.Time;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 
 public class CountdownDemo extends Activity {
 	
-	private static final long BASE_OFFSET = 600000000;
+	private static final long BASE_OFFSET = 30000;
 	CountdownChronometer mChronometer;
 
     @Override
@@ -42,7 +39,7 @@ public class CountdownDemo extends Activity {
 
         mChronometer = (CountdownChronometer) findViewById(R.id.chronometer);
         
-        mChronometer.setBase(SystemClock.elapsedRealtime() + BASE_OFFSET);
+        mChronometer.setBase(System.currentTimeMillis() + BASE_OFFSET);
 
         // Watch for button clicks.
         button = (Button) findViewById(R.id.start);
@@ -75,14 +72,8 @@ public class CountdownDemo extends Activity {
 
     View.OnClickListener mResetListener = new OnClickListener() {
         public void onClick(View v) {
-            //mChronometer.setBase(SystemClock.elapsedRealtime());
-            //mChronometer.setBase(SystemClock.elapsedRealtime() + BASE_OFFSET);
-            Time t = new Time();
-            t.set(0, 0, 11, 26, 8, 2011);
-            
             Calendar c = Calendar.getInstance();
-            c.set(2011, 8, 26, 11, 0, 0);
-            
+            c.set(2011, Calendar.AUGUST, 26, 9, 0, 0);
             mChronometer.setBase(c.getTimeInMillis());
         }
     };
