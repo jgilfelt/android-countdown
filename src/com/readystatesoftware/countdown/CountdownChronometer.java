@@ -384,7 +384,7 @@ public class CountdownChronometer extends Chronometer {
 			} else {
 				sb.append(toDigitChar(hours / 10));
 			}
-			sb.append(toDigitChar(hours / 10));
+			sb.append(toDigitChar(hours % 10));
 			sb.append(TIME_SEPARATOR);
 			if (minutes < 10) {
 				sb.append(TIME_PADDING);
